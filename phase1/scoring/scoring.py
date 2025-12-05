@@ -6,9 +6,9 @@
 import math
 from typing import Any
 
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
 
 
 def compute_stats(
@@ -152,6 +152,7 @@ def compute_stats(
         "expected_value_per_trade": expected_value_per_trade,
     }
 
+
 def backtest(
     prices: pd.DataFrame,
     positions: pd.DataFrame,
@@ -243,6 +244,7 @@ def backtest(
 
     return {"pnl": pnl, "stats": compute_stats(pnl=pnl, positions=positions)}
 
+
 def get_base_score(
     sharpe: float,
     cum_ret: float,
@@ -255,9 +257,9 @@ def get_base_score(
     pnl_w: float = 0.6,
     mdd_w: float = 0.1,
 ):
-    assert np.isclose(
-        sharpe_w + pnl_w + mdd_w, 1
-    ), f"[BASE SCORE] Sum of weights must be equal to 1, got {sharpe_w + pnl_w + mdd_w}"
+    assert np.isclose(sharpe_w + pnl_w + mdd_w, 1), (
+        f"[BASE SCORE] Sum of weights must be equal to 1, got {sharpe_w + pnl_w + mdd_w}"
+    )
 
     pnl = initial_capital * cum_ret
     pnl_max = initial_capital * cum_ret_max
@@ -302,6 +304,7 @@ def get_local_score(
 # affichage
 # ============================================================================
 
+
 def show_result(local_score: dict, is_show_graph: bool = False):
     # Affichage formaté de tous les scores
     print("\n" + "=" * 70)
@@ -314,32 +317,56 @@ def show_result(local_score: dict, is_show_graph: bool = False):
     print(f"  Sharpe Score:     {scores['sharpe_score']:.4f}")
     print(f"  PnL Score:        {scores['pnl_score']:.4f}")
     print(f"  Max Drawdown Score: {scores['mdd_score']:.4f}")
-        
+
     print(f"  ⭐ Base Score:     {scores['base_score']:.4f}")
-  
+
     print("\n" + "=" * 70)
 
     print("🎯 Performance:")
-    print(f"  Brut PnL:        { local_score["stats"]["cumulative_return"]*100:.2f}%")
-
+    print(f"  Brut PnL:        {local_score['stats']['cumulative_return'] * 100:.2f}%")
 
     if is_show_graph:
-        print("\033[94mune page graphique va s'ouvrir pour vous montrer les résultats du pnl\033[0m")
+        print(
+            "\033[94mune page graphique va s'ouvrir pour vous montrer les résultats du pnl\033[0m"
+        )
         # Graphique du PnL avec matplotlib
         pnl_dict = local_score["pnl"]
         pnl_series = pd.Series(pnl_dict).sort_index()
 
         plt.figure(figsize=(12, 6))
-        plt.plot(pnl_series.index, pnl_series.values, linewidth=2, color='#2E86AB')
-        plt.axhline(y=1.0, color='gray', linestyle='--', linewidth=1, alpha=0.5, label='Capital initial')
-        plt.fill_between(pnl_series.index, pnl_series.values, 1.0, 
-                        where=(pnl_series.values >= 1.0), alpha=0.3, color='green', label='Profit')
-        plt.fill_between(pnl_series.index, pnl_series.values, 1.0, 
-                        where=(pnl_series.values < 1.0), alpha=0.3, color='red', label='Perte')
-        plt.xlabel('Epoch', fontsize=12, fontweight='bold')
-        plt.ylabel('PnL (Multiplicateur)', fontsize=12, fontweight='bold')
-        plt.title('Évolution du PnL au fil du temps', fontsize=14, fontweight='bold', pad=20)
-        plt.grid(True, alpha=0.3, linestyle='--')
-        plt.legend(loc='best')
+        plt.plot(pnl_series.index, pnl_series.values, linewidth=2, color="#2E86AB")
+        plt.axhline(
+            y=1.0,
+            color="gray",
+            linestyle="--",
+            linewidth=1,
+            alpha=0.5,
+            label="Capital initial",
+        )
+        plt.fill_between(
+            pnl_series.index,
+            pnl_series.values,
+            1.0,
+            where=(pnl_series.values >= 1.0),
+            alpha=0.3,
+            color="green",
+            label="Profit",
+        )
+        plt.fill_between(
+            pnl_series.index,
+            pnl_series.values,
+            1.0,
+            where=(pnl_series.values < 1.0),
+            alpha=0.3,
+            color="red",
+            label="Perte",
+        )
+        plt.xlabel("Epoch", fontsize=12, fontweight="bold")
+        plt.ylabel("PnL (Multiplicateur)", fontsize=12, fontweight="bold")
+        plt.title(
+            "Évolution du PnL au fil du temps", fontsize=14, fontweight="bold", pad=20
+        )
+        plt.grid(True, alpha=0.3, linestyle="--")
+        plt.legend(loc="best")
         plt.tight_layout()
         plt.show()
